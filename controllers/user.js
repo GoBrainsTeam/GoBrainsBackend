@@ -26,8 +26,7 @@ export async function signup(req, res) {
                 fullname: req.body.fullname,
                 email: email,
                 pwd: pwd,
-                pic: "",
-                isVerified: false
+                pic: ""
             });
 
             user.save().then(async u => {
@@ -165,10 +164,10 @@ export async function signin(req, res) {
 
 export async function forgotPassword(req, res) {
     try {
-        //const resetCode = Math.floor(1000 + Math.random() * 9000)
-        const resetCode = req.body.code
+        const resetCode = Math.floor(1000 + Math.random() * 9000)
         const user = await User.findOne({ email: req.body.email })
         if (user) {
+            await User.findOneAndUpdate({ email: req.body.email, otp: resetCode })
             await sendOTP(req.body.email, resetCode, req.protocol)
             res.status(200).send({ message: "Reset code was sent!" })
         } else if (!user) {
@@ -191,10 +190,15 @@ export async function resetPwd(req, res) {
     try {
         const user = await User.findOne({ email: req.body.email })
         const new_pwd = req.body.new_pwd;
+        const otp = req.body.otp;
         if (user) {
-            user.pwd = await bcrypt.hash(new_pwd, 10);
-            user.save();
-            return res.status(200).send({ message: "Password reset!" });
+            if (otp == user.otp) {
+                user.pwd = await bcrypt.hash(new_pwd, 10);
+                await user.save();
+                return res.status(200).send({ message: "Password reset!" });
+            } else {
+                return res.status(200).send({ message: "Incorrect reset code!" });
+            }
         } else if (!user) {
             res.status(404).send({ message: "User not found!" })
         } else {

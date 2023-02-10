@@ -23,6 +23,11 @@ const UserSchema = new Schema(
       required: true,
       default: false
     },
+    otp : {
+      type : Number,
+      required: true,
+      default : '9475'
+  },
   }
 );
 
