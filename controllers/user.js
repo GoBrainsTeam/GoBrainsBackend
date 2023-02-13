@@ -186,19 +186,35 @@ function generateUserToken(user) {
     })
 }
 
+export async function verifyOTP(req, res) {
+    try {
+        const user = await User.findOne({ email: req.body.email })
+        const otp = req.body.otp;
+        if (user) {
+            if (otp == user.otp) {
+                return res.status(200).send({ message: "OTP verified!" });
+            } else {
+                return res.status(200).send({ message: "OTP is incorrect!" });
+            }
+        } else if (!user) {
+            res.status(404).send({ message: "User not found!" })
+        } else {
+            res.status(400).send({ message: "Failed to verify OTP!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
+
 export async function resetPwd(req, res) {
     try {
         const user = await User.findOne({ email: req.body.email })
         const new_pwd = req.body.new_pwd;
-        const otp = req.body.otp;
         if (user) {
-            if (otp == user.otp) {
-                user.pwd = await bcrypt.hash(new_pwd, 10);
-                await user.save();
-                return res.status(200).send({ message: "Password reset!" });
-            } else {
-                return res.status(200).send({ message: "Incorrect reset code!" });
-            }
+            user.pwd = await bcrypt.hash(new_pwd, 10);
+            await user.save();
+            return res.status(200).send({ message: "Password reset!" });
+
         } else if (!user) {
             res.status(404).send({ message: "User not found!" })
         } else {

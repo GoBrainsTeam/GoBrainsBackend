@@ -1,5 +1,5 @@
 import express from 'express';
-import { changePwd, forgotPassword, getAll, getProfile, resetPwd, sendConfirmationEmail, signin, signup, updateProfile, updateprofilepicture, userExists, verifyEmail } from '../controllers/user.js';
+import { changePwd, forgotPassword, getAll, getProfile, resetPwd, sendConfirmationEmail, signin, signup, updateProfile, updateprofilepicture, userExists, verifyEmail, verifyOTP } from '../controllers/user.js';
 import { authenticateUser } from '../middlewares/authorization.js';
 import multer from '../middlewares/multer-config.js';
 
@@ -27,6 +27,9 @@ router.route('/sendOTP')
 
 router.route('/resetpwd')
     .put(resetPwd)
+
+router.route('/verifyotp')
+    .post(verifyOTP)
 
 router.route('/userExists')
     .post(userExists)
