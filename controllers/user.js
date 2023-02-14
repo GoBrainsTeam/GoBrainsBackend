@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import path from "path";
 
-
+/*************************** SIGN UP USER ***************************/
 export async function signup(req, res) {
     try {
         var email = req.body.email
@@ -26,7 +26,8 @@ export async function signup(req, res) {
                 fullname: req.body.fullname,
                 email: email,
                 pwd: pwd,
-                pic: ""
+                pic: "",
+                isAdmin: req.body.isAdmin //optional in req body (default=false)
             });
 
             user.save().then(async u => {
@@ -52,6 +53,7 @@ export async function signup(req, res) {
     }
 }
 
+/*************************** SEND CONFIRMATION EMAIL ***************************/
 export async function sendConfirmationEmail(req, res) {
     try {
         const user = await User.findOne({ email: req.body.email })
@@ -69,6 +71,7 @@ export async function sendConfirmationEmail(req, res) {
     }
 }
 
+/*************************** RENDER CONFIRMATION EMAIL VIEWS ***************************/
 export async function verifyEmail(req, res) {
     if (req.params.token) {
         try {
@@ -121,6 +124,7 @@ export async function verifyEmail(req, res) {
     }
 }
 
+/*************************** CHECK IF USER EXISTS ***************************/
 export async function userExists(req, res) {
     try {
         var email = req.body.email
@@ -135,6 +139,7 @@ export async function userExists(req, res) {
     }
 }
 
+/*************************** SIGN IN USER ***************************/
 export async function signin(req, res) {
     try {
         const { email, pwd } = req.body
@@ -162,6 +167,7 @@ export async function signin(req, res) {
     }
 }
 
+/*************************** SEND OTP TO ENTERED EMAIL ***************************/
 export async function forgotPassword(req, res) {
     try {
         const resetCode = Math.floor(1000 + Math.random() * 9000)
@@ -181,11 +187,12 @@ export async function forgotPassword(req, res) {
 }
 
 function generateUserToken(user) {
-    return jwt.sign({ "id": user._id, "email": user.email }, 'secret', {
+    return jwt.sign({ "id": user._id, "email": user.email, "isAdmin": user.isAdmin }, 'secret', {
         expiresIn: "30d",
     })
 }
 
+/*************************** CHECK IF ENTERED OTP IS CORRECT ***************************/
 export async function verifyOTP(req, res) {
     try {
         const user = await User.findOne({ email: req.body.email })
@@ -206,6 +213,7 @@ export async function verifyOTP(req, res) {
     }
 }
 
+/*************************** RESET USER PWD ***************************/
 export async function resetPwd(req, res) {
     try {
         const user = await User.findOne({ email: req.body.email })
@@ -225,27 +233,77 @@ export async function resetPwd(req, res) {
     }
 }
 
+/*************************** GET ALL USERS ***************************/
 export async function getAll(req, res) {
     try {
-        let users = await User.find()
-        if (users.length != 0) {
-            res.status(200).send({ users: users })
-        } else if (users.length == 0) {
-            res.status(404).send({ message: "No users found!" })
+        const isAdmin = req.user["isAdmin"]
+        if (isAdmin) {
+            let users = await User.find({}, { fullname: 1, email: 1, pic: 1, isVerified: 1, isAdmin: 1, isBlocked: 1 })
+            if (users.length != 0) {
+                res.status(200).send({ users: users })
+            } else if (users.length == 0) {
+                res.status(404).send({ message: "No users found!" })
+            } else {
+                res.status(400).send({ message: "Failed to get users!" })
+            }
         } else {
-            res.status(400).send({ message: "Failed to get users!" })
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
         }
     } catch (e) {
         res.status(500).send({ message: "Internal Server Error!" })
     }
 }
 
+/*************************** GET ADMINS ***************************/
+export async function getAdmins(req, res) {
+    try {
+        const isAdmin = req.user["isAdmin"]
+        if (isAdmin) {
+            let users = await User.find({ "isAdmin": true }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isAdmin: 1, isBlocked: 1 })
+            if (users.length != 0) {
+                res.status(200).send({ users: users })
+            } else if (users.length == 0) {
+                res.status(404).send({ message: "No admins found!" })
+            } else {
+                res.status(400).send({ message: "Failed to get admins!" })
+            }
+        } else {
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
+
+/*************************** GET NON ADMINS ***************************/
+export async function getNonAdmins(req, res) {
+    try {
+        const isAdmin = req.user["isAdmin"]
+        if (isAdmin) {
+            let users = await User.find({ "isAdmin": false }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isAdmin: 1, isBlocked: 1 })
+            if (users.length != 0) {
+                res.status(200).send({ users: users })
+            } else if (users.length == 0) {
+                res.status(404).send({ message: "No users found!" })
+            } else {
+                res.status(400).send({ message: "Failed to get users!" })
+            }
+        } else {
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
+
+/*************************** GET CURRENT USER PROFILE ***************************/
 export async function getProfile(req, res) {
     try {
         const id = req.user["id"]
         const u = await User.findById(id)
         if (u) {
-            res.status(200).send({ user: u })
+            const { fullname, email, pic, isVerified, isAdmin, isBlocked } = u;
+            res.status(200).send({ user: { fullname, email, pic, isVerified, isAdmin, isBlocked } })
         } else if (!u) {
             res.status(404).send({ message: "User not found!" })
         } else {
@@ -256,6 +314,7 @@ export async function getProfile(req, res) {
     }
 }
 
+/*************************** UPDATE CURRENT USER PROFILE ***************************/
 export async function updateProfile(req, res) {
     const email = req.user["email"]
     const { fullname } = req.body
@@ -273,6 +332,7 @@ export async function updateProfile(req, res) {
         })
 }
 
+/*************************** GET CURRENT USER PROFILE PIC ***************************/
 export function updateprofilepicture(req, res) {
     const id = req.user["id"]
     var profilePic = "";
@@ -290,6 +350,7 @@ export function updateprofilepicture(req, res) {
         })
 }
 
+/*************************** UPDATE CURRENT USER PWD ***************************/
 export async function changePwd(req, res) {
     try {
         const { old_pwd, new_pwd } = req.body
@@ -320,11 +381,97 @@ export async function changePwd(req, res) {
     }
 }
 
+/*************************** DELETE CURRENT USER ACCOUNT ***************************/
+export async function deleteMyAccount(req, res) {
+    try {
+        const id = req.user["id"]
+        let user = await User.findById(id)
+        if (user) {
+            await user.remove()
+            return res.status(204).send({ message: "Account deleted!" })
+        } else if (!user) {
+            return res.status(404).send({ message: "Account does not exist!" })
+        } else {
+            res.status(400).send({ message: "Failed to delete account!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
 
+/*************************** DELETE A USER ACCOUNT ***************************/
+export async function deleteUserAccount(req, res) {
+    try {
+        const isAdmin = req.user["isAdmin"]
+        if (isAdmin) {
+            const user = await User.findOne({ email: req.body.email })
+            if (user) {
+                await user.remove()
+                return res.status(204).send({ message: "Account deleted!" })
+            } else if (!user) {
+                return res.status(404).send({ message: "Account does not exist!" })
+            } else {
+                res.status(400).send({ message: "Failed to delete account!" })
+            }
+        } else {
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
+
+/*************************** BLOCK USER ACCOUNT ***************************/
+export async function blockUser(req, res) {
+    try {
+        const isAdmin = req.user["isAdmin"]
+        if (isAdmin) {
+            const user = await User.findOne({ email: req.body.email })
+            if (user) {
+                user.isBlocked = true
+                user.save().then(u => {
+                    res.status(200).send({ message: "User blocked!" })
+                })
+            } else {
+                res.status(404).send({ message: "User not found!" })
+            }
+        } else {
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
+        }
+    }
+    catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
+
+/*************************** UNBLOCK USER ACCOUNT ***************************/
+export async function unblockUser(req, res) {
+    try {
+        const isAdmin = req.user["isAdmin"]
+        if (isAdmin) {
+            const user = await User.findOne({ email: req.body.email })
+            if (user) {
+                user.isBlocked = false
+                user.save().then(u => {
+                    res.status(200).send({ message: "User unblocked!" })
+                })
+            } else {
+                res.status(404).send({ message: "User not found!" })
+            }
+        } else {
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
+        }
+    }
+    catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
+
+/*************************** CONFIRMATION EMAIL CONTENT ***************************/
 async function doSendConfirmationEmail(email, token, protocol) {
     let port = process.env.PORT || 9090
     sendEmail({
-        from: "gobrains.team@gmail.com",
+        from: process.env.EMAIL,
         to: email,
         subject: "ESPRIT GPT Account Verification",
         template: 'main',
@@ -337,9 +484,10 @@ async function doSendConfirmationEmail(email, token, protocol) {
     })
 }
 
+/*************************** OTP EMAIL CONTENT ***************************/
 async function sendOTP(email, codeDeReinit, protocol) {
     sendEmail({
-        from: "gobrains.team@gmail.com",
+        from: process.env.EMAIL,
         to: email,
         subject: "ESPRIT GPT Verification Code",
         template: 'main',
@@ -352,15 +500,15 @@ async function sendOTP(email, codeDeReinit, protocol) {
     })
 }
 
-
+/*************************** TRIGGER EMAIL SENDING ***************************/
 function sendEmail(mailOptions) {
     let transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
         auth: {
-            user: "gobrains.team@gmail.com",
-            pass: "pskauzajqpvstabu",
+            user: process.env.EMAIL,
+            pass: process.env.PASS,
         },
         tls: { rejectUnauthorized: false }
     })

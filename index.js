@@ -13,7 +13,7 @@ dotenv.config();
 //const mongo_uri=process.env.DB_URL || `mongodb://mongo`;
 const mongo_uri = process.env.DB_URL || `mongodb://127.0.0.1:27017`;
 const port = process.env.PORT || 9090;
-const dbName = 'espritgpt_db';
+const dbName = process.env.DB_NAME;
 
 mongoose.set('debug', true);
 mongoose.Promise = global.Promise;

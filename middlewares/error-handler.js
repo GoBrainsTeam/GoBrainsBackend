@@ -1,5 +1,5 @@
 export function notFoundError(req,res,next){
-    const err=new Error("Not Found");
+    const err=new Error("Route not Found");
     err.status=404;
     next(err);
 };

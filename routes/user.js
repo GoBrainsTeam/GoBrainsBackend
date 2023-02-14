@@ -1,5 +1,5 @@
 import express from 'express';
-import { changePwd, forgotPassword, getAll, getProfile, resetPwd, sendConfirmationEmail, signin, signup, updateProfile, updateprofilepicture, userExists, verifyEmail, verifyOTP } from '../controllers/user.js';
+import { blockUser, changePwd, deleteMyAccount, deleteUserAccount, forgotPassword, getAdmins, getAll, getNonAdmins, getProfile, resetPwd, sendConfirmationEmail, signin, signup, unblockUser, updateProfile, updateprofilepicture, userExists, verifyEmail, verifyOTP } from '../controllers/user.js';
 import { authenticateUser } from '../middlewares/authorization.js';
 import multer from '../middlewares/multer-config.js';
 
@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.route("/token")
     .get(authenticateUser, (req, res) => {
-        res.status(200).send(req.user) // returns user's id and email
+        res.status(200).send(req.user) // returns user's id, email and role (isAdmin=true or isAdmin=false)
     })
 
 router.route('/signup')
@@ -37,6 +37,12 @@ router.route('/userExists')
 router.route("/getall")
     .get(authenticateUser, getAll)
 
+router.route("/getadmins")
+    .get(authenticateUser, getAdmins)
+
+router.route("/getnonadmins")
+    .get(authenticateUser, getNonAdmins)
+
 router.route('/profile')
     .get(authenticateUser, getProfile)
 
@@ -49,5 +55,17 @@ router
 
 router.route('/changepwd')
     .put(authenticateUser, changePwd)
+
+router.route('/deletemyacc')
+    .delete(authenticateUser, deleteMyAccount)
+
+router.route('/deleteuseracc')
+    .delete(authenticateUser, deleteUserAccount)
+
+router.route('/block')
+    .put(authenticateUser, blockUser)
+
+router.route('/unblock')
+    .put(authenticateUser, unblockUser)
 
 export default router;

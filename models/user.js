@@ -23,11 +23,21 @@ const UserSchema = new Schema(
       required: true,
       default: false
     },
-    otp : {
-      type : Number,
+    isAdmin: {
+      type: Boolean,
       required: true,
-      default : '9475'
-  },
+      default: false
+    },
+    isBlocked: {
+      type: Boolean,
+      required: true,
+      default: false
+    },
+    otp: {
+      type: Number,
+      required: true,
+      default: '9475'
+    },
   }
 );
 
