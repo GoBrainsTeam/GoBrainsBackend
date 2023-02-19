@@ -1,5 +1,5 @@
 import express from 'express';
-import { blockUser, changePwd, deleteMyAccount, deleteUserAccount, forgotPassword, getAdmins, getAll, getNonAdmins, getProfile, resetPwd, sendConfirmationEmail, signin, signup, unblockUser, updateProfile, updateprofilepicture, userExists, verifyEmail, verifyOTP } from '../controllers/user.js';
+import { blockUser, deleteMyAccount, deleteUserAccount, forgotPassword, getAdmins, getAll, getNonAdmins, getProfile, resetPwd, sendConfirmationEmail, signin, signup, unblockUser, updateProfile, updateprofilepicture, userExists, verifyEmail, verifyOTP } from '../controllers/user.js';
 import { authenticateUser } from '../middlewares/authorization.js';
 import multer from '../middlewares/multer-config.js';
 
@@ -53,8 +53,7 @@ router
     .route('/updateprofilepic')
     .put(authenticateUser, multer("pic"), updateprofilepicture)
 
-router.route('/changepwd')
-    .put(authenticateUser, changePwd)
+//router.route('/changepwd').put(authenticateUser, changePwd)
 
 router.route('/deletemyacc')
     .delete(authenticateUser, deleteMyAccount)

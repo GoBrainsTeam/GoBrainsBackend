@@ -314,8 +314,8 @@ export async function getProfile(req, res) {
     }
 }
 
-/*************************** UPDATE CURRENT USER PROFILE ***************************/
-export async function updateProfile(req, res) {
+/*************************** UPDATE CURRENT USER NAME ***************************/
+/*export async function updateProfile(req, res) {
     const email = req.user["email"]
     const { fullname } = req.body
     User.findOneAndUpdate(
@@ -330,7 +330,7 @@ export async function updateProfile(req, res) {
         .catch(err => {
             res.status(500).send({ message: "Failed to update profile!" })
         })
-}
+}*/
 
 /*************************** GET CURRENT USER PROFILE PIC ***************************/
 export function updateprofilepicture(req, res) {
@@ -350,12 +350,13 @@ export function updateprofilepicture(req, res) {
         })
 }
 
-/*************************** UPDATE CURRENT USER PWD ***************************/
-export async function changePwd(req, res) {
+/*************************** UPDATE CURRENT USER PROFILE ***************************/
+export async function updateProfile(req, res) {
     try {
-        const { old_pwd, new_pwd } = req.body
+        const { fullname, old_pwd, new_pwd } = req.body
         const email = req.user["email"]
         const user = await User.findOne({ email })
+
         if (old_pwd && new_pwd) {
             const isCorrectPassword = await user.isCorrectPassword(old_pwd);
             if (user && isCorrectPassword) {
@@ -363,18 +364,27 @@ export async function changePwd(req, res) {
                     { email: email },
                     {
                         $set: {
-                            pwd: await bcrypt.hash(new_pwd, 10),
+                            fullname: fullname,
+                            pwd: await bcrypt.hash(new_pwd, 10)
                         },
                     }
                 )
-                return res.status(200).send({ message: "Password updated!" })
+                return res.status(200).send({ message: "Profile updated!" })
             } else {
                 return res.status(401).send({ message: "Incorrect credentials!" })
             }
         } else if (!(old_pwd && new_pwd)) {
-            return res.status(403).send({ message: "Password should not be empty!" })
+            await User.findOneAndUpdate(
+                { email: email },
+                {
+                    $set: {
+                        fullname
+                    },
+                }
+            )
+            return res.status(200).send({ message: "Profile updated!" })
         } else {
-            res.status(400).send({ message: "Failed to change password!" })
+            res.status(400).send({ message: "Failed to update profile!" })
         }
     } catch (e) {
         res.status(500).send({ message: "Internal Server Error!" })
