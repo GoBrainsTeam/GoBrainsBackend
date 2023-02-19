@@ -201,7 +201,7 @@ export async function verifyOTP(req, res) {
             if (otp == user.otp) {
                 return res.status(200).send({ message: "OTP verified!" });
             } else {
-                return res.status(200).send({ message: "OTP is incorrect!" });
+                return res.status(422).send({ message: "OTP is incorrect!" });
             }
         } else if (!user) {
             res.status(404).send({ message: "User not found!" })
