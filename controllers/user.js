@@ -353,10 +353,16 @@ export function updateprofilepicture(req, res) {
 /*************************** UPDATE CURRENT USER PROFILE ***************************/
 export async function updateProfile(req, res) {
     try {
-        const { fullname, old_pwd, new_pwd } = req.body
+        const { old_pwd, new_pwd } = req.body
         const email = req.user["email"]
         const user = await User.findOne({ email })
-
+        var fullname
+        if(req.body.fullname){
+            fullname=req.body.fullname
+        }else{
+            fullname=user.fullname
+        }
+      
         if (old_pwd && new_pwd) {
             const isCorrectPassword = await user.isCorrectPassword(old_pwd);
             if (user && isCorrectPassword) {
