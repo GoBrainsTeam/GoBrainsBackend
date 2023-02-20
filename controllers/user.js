@@ -344,7 +344,7 @@ export function updateprofilepicture(req, res) {
             "pic": profilePic
         })
         .then(val =>
-            res.status(200).json(val))
+            res.status(200).json(profilePic))
         .catch(err => {
             res.status(500).send({ message: "Failed to update profile picture!" })
         })
