@@ -26,7 +26,7 @@ export async function signup(req, res) {
                 fullname: req.body.fullname,
                 email: email,
                 pwd: pwd,
-                pic: "",
+                pic: "defpdp.png",
                 isAdmin: req.body.isAdmin //optional in req body (default=false)
             });
 
