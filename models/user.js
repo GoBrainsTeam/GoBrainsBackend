@@ -23,11 +23,6 @@ const UserSchema = new Schema(
       required: true,
       default: false
     },
-    isAdmin: {
-      type: Boolean,
-      required: true,
-      default: false
-    },
     isBlocked: {
       type: Boolean,
       required: true,
@@ -38,6 +33,22 @@ const UserSchema = new Schema(
       required: true,
       default: '9475'
     },
+    role: {
+      type: String,
+      default: 'ADMIN'
+    },
+    level: {
+      type: Number,
+    },
+    speciality: {
+      type: String,
+    },
+    threads: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Thread"
+      }
+    ],
   }
 );
 

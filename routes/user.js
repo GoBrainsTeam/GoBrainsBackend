@@ -1,5 +1,5 @@
 import express from 'express';
-import { blockUser, deleteMyAccount, deleteUserAccount, forgotPassword, getAdmins, getAll, getNonAdmins, getProfile, resetPwd, sendConfirmationEmail, signin, signup, unblockUser, updateProfile, updateprofilepicture, userExists, verifyEmail, verifyOTP } from '../controllers/user.js';
+import { blockUser, deleteMyAccount, deleteUserAccount, forgotPassword, getAdmins, getAll, getNonAdmins, getProfile, resetPwd, sendConfirmationEmail, signin, signinAdmin, signup, unblockUser, updateProfile, updateprofilepicture, userExists, verifyEmail, verifyOTP } from '../controllers/user.js';
 import { authenticateUser } from '../middlewares/authorization.js';
 import multer from '../middlewares/multer-config.js';
 
@@ -21,6 +21,9 @@ router.route('/verify/:token')
 
 router.route('/signin')
     .post(signin)
+
+router.route('/signinadmin')
+    .post(signinAdmin)
 
 router.route('/sendOTP')
     .post(forgotPassword)

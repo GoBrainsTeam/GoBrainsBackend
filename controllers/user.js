@@ -27,7 +27,10 @@ export async function signup(req, res) {
                 email: email,
                 pwd: pwd,
                 pic: "defpdp.png",
-                isAdmin: req.body.isAdmin //optional in req body (default=false)
+                //isAdmin: req.body.isAdmin, //optional in req body (default=false)
+                role: req.body.role.toUpperCase(),
+                level: req.body.level,
+                speciality: req.body.speciality
             });
 
             user.save().then(async u => {
@@ -151,8 +154,41 @@ export async function signin(req, res) {
                 if (!user.isVerified) {
                     await doSendConfirmationEmail(email, token, req.protocol)
                     res.status(403).send({ user, message: "Please verify your account!" })
+                } else if (user.role=='ADMIN') {
+                    res.status(401).send({ message: "Unauthorized!" })
                 } else {
                     res.status(200).send({ token, message: "User logged in!" })
+                }
+            } else {
+                res.status(403).send({ message: "Password is incorrect!" })
+            }
+        } else if (!user) {
+            res.status(403).send({ message: "No account with this email was found!" })
+        } else {
+            res.status(400).send({ message: "Failed to login!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
+
+/*************************** SIGN IN ADMIN ***************************/
+export async function signinAdmin(req, res) {
+    try {
+        const { email, pwd } = req.body
+        const user = await User.findOne({ email })
+        if (user) {
+            const verifyPwd = await user.verifyPwd(pwd);
+            if (verifyPwd) {
+                const token = generateUserToken(user)
+                if (!user.isVerified) {
+                    await doSendConfirmationEmail(email, token, req.protocol)
+                    res.status(403).send({ user, message: "Please verify your account!" })
+                } else if (user.role!='ADMIN') {
+                    res.status(401).send({ message: "Unauthorized!" })
+                }
+                else {
+                    res.status(200).send({ token, message: "Admin logged in!" })
                 }
             } else {
                 res.status(403).send({ message: "Password is incorrect!" })
@@ -187,7 +223,7 @@ export async function forgotPassword(req, res) {
 }
 
 function generateUserToken(user) {
-    return jwt.sign({ "id": user._id, "email": user.email, "isAdmin": user.isAdmin }, 'secret', {
+    return jwt.sign({ "id": user._id, "email": user.email }, 'secret', {
         expiresIn: "30d",
     })
 }
@@ -236,9 +272,9 @@ export async function resetPwd(req, res) {
 /*************************** GET ALL USERS ***************************/
 export async function getAll(req, res) {
     try {
-        const isAdmin = req.user["isAdmin"]
-        if (isAdmin) {
-            let users = await User.find({}, { fullname: 1, email: 1, pic: 1, isVerified: 1, isAdmin: 1, isBlocked: 1 })
+        const role = req.user["role"]
+        if (role=='ADMIN') {
+            let users = await User.find({}, { fullname: 1, email: 1, pic: 1, isVerified: 1, role: 1, isBlocked: 1 })
             if (users.length != 0) {
                 res.status(200).send({ users: users })
             } else if (users.length == 0) {
@@ -257,9 +293,9 @@ export async function getAll(req, res) {
 /*************************** GET ADMINS ***************************/
 export async function getAdmins(req, res) {
     try {
-        const isAdmin = req.user["isAdmin"]
-        if (isAdmin) {
-            let users = await User.find({ "isAdmin": true }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isAdmin: 1, isBlocked: 1 })
+        const role = req.user["role"]
+        if (role=='ADMIN') {
+            let users = await User.find({ role: 'ADMIN' }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isBlocked: 1 })
             if (users.length != 0) {
                 res.status(200).send({ users: users })
             } else if (users.length == 0) {
@@ -278,9 +314,9 @@ export async function getAdmins(req, res) {
 /*************************** GET NON ADMINS ***************************/
 export async function getNonAdmins(req, res) {
     try {
-        const isAdmin = req.user["isAdmin"]
-        if (isAdmin) {
-            let users = await User.find({ "isAdmin": false }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isAdmin: 1, isBlocked: 1 })
+        const role = req.user["role"]
+        if (role=='ADMIN') {
+            let users = await User.find({ role: { $ne: 'ADMIN' } }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isBlocked: 1 })
             if (users.length != 0) {
                 res.status(200).send({ users: users })
             } else if (users.length == 0) {
@@ -302,8 +338,8 @@ export async function getProfile(req, res) {
         const id = req.user["id"]
         const u = await User.findById(id)
         if (u) {
-            const { fullname, email, pic, isVerified, isAdmin, isBlocked } = u;
-            res.status(200).send({ user: { fullname, email, pic, isVerified, isAdmin, isBlocked } })
+            const { fullname, email, pic, isVerified, role, isBlocked, level, speciality } = u;
+            res.status(200).send({ user: { fullname, email, pic, isVerified, role, isBlocked, level, speciality } })
         } else if (!u) {
             res.status(404).send({ message: "User not found!" })
         } else {
@@ -357,12 +393,12 @@ export async function updateProfile(req, res) {
         const email = req.user["email"]
         const user = await User.findOne({ email })
         var fullname
-        if(req.body.fullname){
-            fullname=req.body.fullname
-        }else{
-            fullname=user.fullname
+        if (req.body.fullname) {
+            fullname = req.body.fullname
+        } else {
+            fullname = user.fullname
         }
-      
+
         if (old_pwd && new_pwd) {
             const isCorrectPassword = await user.isCorrectPassword(old_pwd);
             if (user && isCorrectPassword) {
@@ -418,8 +454,8 @@ export async function deleteMyAccount(req, res) {
 /*************************** DELETE A USER ACCOUNT ***************************/
 export async function deleteUserAccount(req, res) {
     try {
-        const isAdmin = req.user["isAdmin"]
-        if (isAdmin) {
+        const role = req.user["role"]
+        if (role=='ADMIN') {
             const user = await User.findOne({ email: req.body.email })
             if (user) {
                 await user.remove()
@@ -440,8 +476,8 @@ export async function deleteUserAccount(req, res) {
 /*************************** BLOCK USER ACCOUNT ***************************/
 export async function blockUser(req, res) {
     try {
-        const isAdmin = req.user["isAdmin"]
-        if (isAdmin) {
+        const role = req.user["role"]
+        if (role=='ADMIN') {
             const user = await User.findOne({ email: req.body.email })
             if (user) {
                 user.isBlocked = true
@@ -463,8 +499,8 @@ export async function blockUser(req, res) {
 /*************************** UNBLOCK USER ACCOUNT ***************************/
 export async function unblockUser(req, res) {
     try {
-        const isAdmin = req.user["isAdmin"]
-        if (isAdmin) {
+        const role = req.user["role"]
+        if (role=='ADMIN') {
             const user = await User.findOne({ email: req.body.email })
             if (user) {
                 user.isBlocked = false
