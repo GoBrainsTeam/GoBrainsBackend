@@ -78,7 +78,7 @@ export async function predictTag(req, res) {
             await thread.save().then(async t => {
                 user.threads.push(thread);
                 await user.save();
-                res.status(201).json({ message: thread })
+                res.status(201).json({ thread })
             })
         })
         .catch(error => {
