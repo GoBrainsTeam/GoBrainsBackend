@@ -3,11 +3,11 @@ const { Schema, model } = mongoose;
 
 const ThreadSchema = new Schema(
   {
-    question: {
+    prompt: {
       type: String,
       required: true
     },
-    answer: {
+    completion: {
       type: String,
       required: true
     },
