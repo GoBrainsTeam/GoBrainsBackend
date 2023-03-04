@@ -6,6 +6,7 @@ import cors from 'cors';
 import handlebars from "express-handlebars";
 import { errorHandler, notFoundError } from './middlewares/error-handler.js';
 import userRoutes from './routes/user.js';
+import threadRoutes from './routes/thread.js';
 
 const app = express();
 dotenv.config();
@@ -42,6 +43,7 @@ app.use('/img', express.static('public/images'));
 
 //ROUTES
 app.use('/user', userRoutes);
+app.use('/thread', threadRoutes);
 
 // 404 routes middlewares
 app.use(notFoundError);

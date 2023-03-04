@@ -14,7 +14,7 @@ export function authenticateUser(req, res, next) {
           req.user = {
             "id": result["id"],
             "email": result["email"],
-            "isAdmin": result["isAdmin"],
+            "role": result["role"],
           }
           next()
         }

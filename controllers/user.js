@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import path from "path";
 
-/*************************** SIGN UP USER ***************************/
+/*************************** SIGN UP USER+ADMIN ***************************/
 export async function signup(req, res) {
     try {
         var email = req.body.email
@@ -153,7 +153,7 @@ export async function signin(req, res) {
                 const token = generateUserToken(user)
                 if (!user.isVerified) {
                     await doSendConfirmationEmail(email, token, req.protocol)
-                    res.status(403).send({ user, message: "Please verify your account!" })
+                    res.status(403).send({ message: "Please verify your account!" })
                 } else if (user.role=='ADMIN') {
                     res.status(401).send({ message: "Unauthorized!" })
                 } else {
@@ -223,7 +223,7 @@ export async function forgotPassword(req, res) {
 }
 
 function generateUserToken(user) {
-    return jwt.sign({ "id": user._id, "email": user.email }, 'secret', {
+    return jwt.sign({ "id": user._id, "email": user.email, "role":user.role }, 'secret', {
         expiresIn: "30d",
     })
 }
