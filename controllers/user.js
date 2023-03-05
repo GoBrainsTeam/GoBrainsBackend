@@ -28,9 +28,9 @@ export async function signup(req, res) {
                 pwd: pwd,
                 pic: "defpdp.png",
                 //isAdmin: req.body.isAdmin, //optional in req body (default=false)
-                role: req.body.role.toUpperCase(),
-                level: req.body.level,
-                speciality: req.body.speciality
+                role: req.body.role ? req.body.role.toUpperCase() : 'ADMIN',
+                level: req.body.level || null,
+                speciality: req.body.speciality || ''
             });
 
             user.save().then(async u => {
@@ -154,7 +154,7 @@ export async function signin(req, res) {
                 if (!user.isVerified) {
                     await doSendConfirmationEmail(email, token, req.protocol)
                     res.status(403).send({ message: "Please verify your account!" })
-                } else if (user.role=='ADMIN') {
+                } else if (user.role == 'ADMIN') {
                     res.status(401).send({ message: "Unauthorized!" })
                 } else {
                     res.status(200).send({ token, message: "User logged in!" })
@@ -184,7 +184,7 @@ export async function signinAdmin(req, res) {
                 if (!user.isVerified) {
                     await doSendConfirmationEmail(email, token, req.protocol)
                     res.status(403).send({ user, message: "Please verify your account!" })
-                } else if (user.role!='ADMIN') {
+                } else if (user.role != 'ADMIN') {
                     res.status(401).send({ message: "Unauthorized!" })
                 }
                 else {
@@ -223,7 +223,7 @@ export async function forgotPassword(req, res) {
 }
 
 function generateUserToken(user) {
-    return jwt.sign({ "id": user._id, "email": user.email, "role":user.role }, 'secret', {
+    return jwt.sign({ "id": user._id, "email": user.email, "role": user.role }, 'secret', {
         expiresIn: "30d",
     })
 }
@@ -273,7 +273,7 @@ export async function resetPwd(req, res) {
 export async function getAll(req, res) {
     try {
         const role = req.user["role"]
-        if (role=='ADMIN') {
+        if (role == 'ADMIN') {
             let users = await User.find({}, { fullname: 1, email: 1, pic: 1, isVerified: 1, role: 1, isBlocked: 1 })
             if (users.length != 0) {
                 res.status(200).send({ users: users })
@@ -294,7 +294,7 @@ export async function getAll(req, res) {
 export async function getAdmins(req, res) {
     try {
         const role = req.user["role"]
-        if (role=='ADMIN') {
+        if (role == 'ADMIN') {
             let users = await User.find({ role: 'ADMIN' }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isBlocked: 1 })
             if (users.length != 0) {
                 res.status(200).send({ users: users })
@@ -315,7 +315,7 @@ export async function getAdmins(req, res) {
 export async function getNonAdmins(req, res) {
     try {
         const role = req.user["role"]
-        if (role=='ADMIN') {
+        if (role == 'ADMIN') {
             let users = await User.find({ role: { $ne: 'ADMIN' } }, { fullname: 1, email: 1, pic: 1, isVerified: 1, isBlocked: 1 })
             if (users.length != 0) {
                 res.status(200).send({ users: users })
@@ -455,7 +455,7 @@ export async function deleteMyAccount(req, res) {
 export async function deleteUserAccount(req, res) {
     try {
         const role = req.user["role"]
-        if (role=='ADMIN') {
+        if (role == 'ADMIN') {
             const user = await User.findOne({ email: req.body.email })
             if (user) {
                 await user.remove()
@@ -477,7 +477,7 @@ export async function deleteUserAccount(req, res) {
 export async function blockUser(req, res) {
     try {
         const role = req.user["role"]
-        if (role=='ADMIN') {
+        if (role == 'ADMIN') {
             const user = await User.findOne({ email: req.body.email })
             if (user) {
                 user.isBlocked = true
@@ -500,7 +500,7 @@ export async function blockUser(req, res) {
 export async function unblockUser(req, res) {
     try {
         const role = req.user["role"]
-        if (role=='ADMIN') {
+        if (role == 'ADMIN') {
             const user = await User.findOne({ email: req.body.email })
             if (user) {
                 user.isBlocked = false
