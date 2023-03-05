@@ -38,8 +38,8 @@ export async function getRolePercentage(req, res) {
             const total = counts.reduce((acc, { count }) => acc + count, 0);
             const result = roles.reduce((acc, role) => {
                 const countObj = counts.find((c) => c._id === role) || { count: 0 };
-                const percentage = (countObj.count / total) * 100;
-                return { ...acc, [role]: percentage };
+                const res = countObj.count
+                return { ...acc, [role]: res };
             }, {});
             res.status(200).json({ result });
         } else {
@@ -123,15 +123,12 @@ export async function getThreadPercentageByRoles(req, res) {
             ]);
 
             const total = counts.reduce((acc, { count }) => acc + count, 0);
-
             counts.forEach(({ _id, count }) => {
-                const percentage = (count / total) * 100;
-                roleCounts[_id] = percentage;
+                roleCounts[_id] = count;
             });
-
             const result = Object.keys(roleCounts).reduce((acc, role) => {
-                const percentage = roleCounts[role];
-                return { ...acc, [role]: percentage };
+                const res = roleCounts[role];
+                return { ...acc, [role]: res };
             }, {});
 
             return res.status(200).json({ result });
@@ -184,13 +181,12 @@ export async function getThreadPercentageByStudentLevel(req, res) {
             const total = counts.reduce((acc, { count }) => acc + count, 0);
 
             counts.forEach(({ _id, count }) => {
-                const percentage = (count / total) * 100;
-                levelCounts[_id] = percentage;
+                levelCounts[_id] = count;
             });
 
             const result = Object.keys(levelCounts).reduce((acc, level) => {
-                const percentage = levelCounts[level];
-                return { ...acc, [level]: percentage };
+                const res = levelCounts[level];
+                return { ...acc, [level]: res };
             }, {});
 
             return res.status(200).json({ result });
@@ -239,8 +235,7 @@ export async function getThreadPercentageBySpeciality(req, res) {
 
             const total = counts.reduce((acc, { count }) => acc + count, 0);
             const result = counts.reduce((acc, { _id, count }) => {
-                const percentage = (count / total) * 100;
-                return { ...acc, [_id]: percentage };
+                return { ...acc, [_id]: count };
             }, {});
             res.status(200).json({ result });
         } else {
