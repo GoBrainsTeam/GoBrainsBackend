@@ -50,7 +50,20 @@ export async function getRolePercentage(req, res) {
     }
 }
 
-
+/*************************** COUNT TOTAL NB ASKED QUESTIONS ***************************/
+export async function countAsked(req, res) {
+    try {
+        const role = req.user["role"]
+        if (role == 'ADMIN') {
+            const totalAsked = await Thread.countDocuments({ user: { $exists: true } });
+            res.status(200).json({ result: totalAsked })
+        } else {
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
+    }
+}
 
 /*************************** STATS ON THREADS BY TAGS ***************************/
 export async function getTagStats(req, res) {
@@ -63,21 +76,6 @@ export async function getTagStats(req, res) {
                 { $project: { _id: 0, tag: "$_id", count: 1, percent: { $multiply: [{ $divide: ["$count", totalQuestions] }, 100] } } }
             ]);
             res.status(200).json({ result: tagstats })
-        } else {
-            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
-        }
-    } catch (e) {
-        res.status(500).send({ message: "Internal Server Error!" })
-    }
-}
-
-/*************************** COUNT TOTAL NB ASKED QUESTIONS ***************************/
-export async function countAsked(req, res) {
-    try {
-        const role = req.user["role"]
-        if (role == 'ADMIN') {
-            const totalAsked = await Thread.countDocuments({ user: { $exists: true } });
-            res.status(200).json({ result: totalAsked })
         } else {
             res.status(401).send({ message: "Oops, looks like you're not an admin!" })
         }
@@ -150,45 +148,52 @@ export async function getThreadPercentageByStudentLevel(req, res) {
     try {
         const role = req.user["role"];
         if (role == "ADMIN") {
+            const levels = [1, 2, 3, 4, 5];
+            const levelCounts = levels.reduce((acc, level) => {
+                return { ...acc, [level]: 0 };
+            }, {});
             const counts = await User.aggregate([
                 {
                     $match: {
                         role: "STUDENT",
                         level: { $in: [1, 2, 3, 4, 5] } // add level filter
-                    }
+                    },
                 },
                 {
                     $lookup: {
                         from: "threads",
                         localField: "threads",
                         foreignField: "_id",
-                        as: "threads"
-                    }
+                        as: "threads",
+                    },
                 },
                 {
                     $project: {
-                        level: 1, // project level field
-                        threadCount: { $size: "$threads" }
-                    }
+                        level: 1,
+                        threadCount: { $size: "$threads" },
+                    },
                 },
                 {
                     $group: {
-                        _id: "$level", // group by level field
-                        count: { $sum: "$threadCount" }
-                    }
-                }
+                        _id: "$level",
+                        count: { $sum: "$threadCount" },
+                    },
+                },
             ]);
 
             const total = counts.reduce((acc, { count }) => acc + count, 0);
-            return res.status(200).json({
-                result: counts.reduce(
-                    (acc, { _id, count }) => ({
-                        ...acc,
-                        [_id]: ((count / total) * 100).toFixed(2) + "%" // add percentage calculation and formatting
-                    }),
-                    {}
-                )
+
+            counts.forEach(({ _id, count }) => {
+                const percentage = (count / total) * 100;
+                levelCounts[_id] = percentage;
             });
+
+            const result = Object.keys(levelCounts).reduce((acc, level) => {
+                const percentage = levelCounts[level];
+                return { ...acc, [level]: percentage };
+            }, {});
+
+            return res.status(200).json({ result });
         } else {
             res.status(401).send({ message: "Oops, looks like you're not an admin!" })
         }
