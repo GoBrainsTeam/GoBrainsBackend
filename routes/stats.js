@@ -1,5 +1,5 @@
 import express from 'express';
-import { countAsked, countUsers, getRolePercentage, getTagStats, getThreadPercentageByRoles, getThreadPercentageBySpeciality, getThreadPercentageByStudentLevel } from '../controllers/stats.js';
+import { countAsked, countUsers, getRolePercentage, getTagStats, getQuestionPercentageByRoles, getQuestionPercentageBySpeciality, getQuestionPercentageByStudentLevel } from '../controllers/stats.js';
 import { authenticateUser } from '../middlewares/authorization.js';
 
 const router = express.Router();
@@ -10,19 +10,19 @@ router.route("/user/count")
 router.route("/user/role")
     .get(authenticateUser, getRolePercentage)
 
-router.route("/thread/tags")
+router.route("/question/tags")
     .get(authenticateUser, getTagStats)
 
-router.route("/thread/count")
+router.route("/question/count")
     .get(authenticateUser, countAsked)
 
-router.route("/thread/role")
-    .get(authenticateUser, getThreadPercentageByRoles)
+router.route("/question/role")
+    .get(authenticateUser, getQuestionPercentageByRoles)
 
-router.route("/thread/level")
-    .get(authenticateUser, getThreadPercentageByStudentLevel)
+router.route("/question/level")
+    .get(authenticateUser, getQuestionPercentageByStudentLevel)
 
-router.route("/thread/speciality")
-    .get(authenticateUser, getThreadPercentageBySpeciality)
+router.route("/question/speciality")
+    .get(authenticateUser, getQuestionPercentageBySpeciality)
 
 export default router;

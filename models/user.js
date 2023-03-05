@@ -43,10 +43,10 @@ const UserSchema = new Schema(
     speciality: {
       type: String,
     },
-    threads: [
+    questions: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Thread"
+        ref: "Question"
       }
     ],
   }

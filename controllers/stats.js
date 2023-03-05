@@ -1,7 +1,7 @@
-import Thread from "../models/thread.js";
+import Question from "../models/question.js";
 import User from "../models/user.js";
 
-/*************************** USERS COUNT (ALL USERS IN DB EXCEPT ADMINS/NOT RELATED TO THREADS) ***************************/
+/*************************** USERS COUNT (ALL USERS IN DB EXCEPT ADMINS/NOT RELATED TO QUESTIONS) ***************************/
 export async function countUsers(req, res) {
     try {
         const role = req.user["role"]
@@ -16,7 +16,7 @@ export async function countUsers(req, res) {
     }
 }
 
-/*************************** ROLES PERCENTAGES (ALL USERS IN DB EXCEPT ADMINS/NOT RELATED TO THREADS) ***************************/
+/*************************** ROLES PERCENTAGES (ALL USERS IN DB EXCEPT ADMINS/NOT RELATED TO QUESTIONS) ***************************/
 export async function getRolePercentage(req, res) {
     try {
         const role = req.user["role"]
@@ -55,7 +55,7 @@ export async function countAsked(req, res) {
     try {
         const role = req.user["role"]
         if (role == 'ADMIN') {
-            const totalAsked = await Thread.countDocuments({ user: { $exists: true } });
+            const totalAsked = await Question.countDocuments({ user: { $exists: true } });
             res.status(200).json({ result: totalAsked })
         } else {
             res.status(401).send({ message: "Oops, looks like you're not an admin!" })
@@ -65,13 +65,13 @@ export async function countAsked(req, res) {
     }
 }
 
-/*************************** STATS ON THREADS BY TAGS ***************************/
+/*************************** STATS ON QUESTIONS BY TAGS ***************************/
 export async function getTagStats(req, res) {
     try {
         const role = req.user["role"]
         if (role == 'ADMIN') {
-            const totalQuestions = await Thread.countDocuments();
-            const tagstats = await Thread.aggregate([
+            const totalQuestions = await Question.countDocuments();
+            const tagstats = await Question.aggregate([
                 { $group: { _id: "$tag", count: { $sum: 1 } } },
                 { $project: { _id: 0, tag: "$_id", count: 1, percent: { $multiply: [{ $divide: ["$count", totalQuestions] }, 100] } } }
             ]);
@@ -84,8 +84,8 @@ export async function getTagStats(req, res) {
     }
 }
 
-/*************************** STATS ON THREADS BY ROLE ***************************/
-export async function getThreadPercentageByRoles(req, res) {
+/*************************** STATS ON QUESTIONS BY ROLE ***************************/
+export async function getQuestionPercentageByRoles(req, res) {
     try {
         const role = req.user["role"];
         if (role == "ADMIN") {
@@ -102,22 +102,22 @@ export async function getThreadPercentageByRoles(req, res) {
                 },
                 {
                     $lookup: {
-                        from: "threads",
-                        localField: "threads",
+                        from: "questions",
+                        localField: "questions",
                         foreignField: "_id",
-                        as: "threads",
+                        as: "questions",
                     },
                 },
                 {
                     $project: {
                         role: 1,
-                        threadCount: { $size: "$threads" },
+                        questionCount: { $size: "$questions" },
                     },
                 },
                 {
                     $group: {
                         _id: "$role",
-                        count: { $sum: "$threadCount" },
+                        count: { $sum: "$questionCount" },
                     },
                 },
             ]);
@@ -140,8 +140,8 @@ export async function getThreadPercentageByRoles(req, res) {
     }
 }
 
-/*************************** STATS ON THREADS BASED ON STUDENTS LEVELS ***************************/
-export async function getThreadPercentageByStudentLevel(req, res) {
+/*************************** STATS ON QUESTIONS BASED ON STUDENTS LEVELS ***************************/
+export async function getQuestionPercentageByStudentLevel(req, res) {
     try {
         const role = req.user["role"];
         if (role == "ADMIN") {
@@ -158,22 +158,22 @@ export async function getThreadPercentageByStudentLevel(req, res) {
                 },
                 {
                     $lookup: {
-                        from: "threads",
-                        localField: "threads",
+                        from: "questions",
+                        localField: "questions",
                         foreignField: "_id",
-                        as: "threads",
+                        as: "questions",
                     },
                 },
                 {
                     $project: {
                         level: 1,
-                        threadCount: { $size: "$threads" },
+                        questionCount: { $size: "$questions" },
                     },
                 },
                 {
                     $group: {
                         _id: "$level",
-                        count: { $sum: "$threadCount" },
+                        count: { $sum: "$questionCount" },
                     },
                 },
             ]);
@@ -198,8 +198,8 @@ export async function getThreadPercentageByStudentLevel(req, res) {
     }
 }
 
-/*************************** STATS ON THREADS BASED ON STUDENTS SPECIALITIES ***************************/
-export async function getThreadPercentageBySpeciality(req, res) {
+/*************************** STATS ON QUESTIONS BASED ON STUDENTS SPECIALITIES ***************************/
+export async function getQuestionPercentageBySpeciality(req, res) {
     try {
         const role = req.user["role"];
         if (role == "ADMIN") {
@@ -213,22 +213,22 @@ export async function getThreadPercentageBySpeciality(req, res) {
                 },
                 {
                     $lookup: {
-                        from: "threads",
-                        localField: "threads",
+                        from: "questions",
+                        localField: "questions",
                         foreignField: "_id",
-                        as: "threads",
+                        as: "questions",
                     },
                 },
                 {
                     $project: {
                         speciality: 1,
-                        threadCount: { $size: "$threads" },
+                        questionCount: { $size: "$questions" },
                     },
                 },
                 {
                     $group: {
                         _id: "$speciality",
-                        count: { $sum: "$threadCount" },
+                        count: { $sum: "$questionCount" },
                     },
                 },
             ]);

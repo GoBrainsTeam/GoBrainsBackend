@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
-const ThreadSchema = new Schema(
+const QuestionSchema = new Schema(
   {
     prompt: {
       type: String,
@@ -24,4 +24,4 @@ const ThreadSchema = new Schema(
   }
 );
 
-export default model("Thread", ThreadSchema);
+export default model("Question", QuestionSchema);

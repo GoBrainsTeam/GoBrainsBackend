@@ -1,31 +1,7 @@
-import Thread from "../models/thread.js";
+import Question from "../models/question.js";
 import User from "../models/user.js";
 import axios from 'axios';
 
-/*export async function saveThread(req, res) {
-    try {
-        const userId = req.user["id"]
-        const user = await User.findById(userId)
-        if (user) {
-            const thread = new Thread({
-                prompt: req.body.prompt,
-                completion: req.body.completion,
-                tag: req.body.tag,
-                subtag: req.body.subtag,
-                user: userId
-            });
-            await thread.save().then(async t => {
-                user.threads.push(thread);
-                await user.save();
-                res.status(201).json({ message: thread })
-            })
-        } else {
-            return res.status(404).send({ message: "User not found!" });
-        }
-    } catch (e) {
-        res.status(500).send({ message: "Internal Server Error!" })
-    }
-}*/
 
 /*************************** GENERATED RANDOM ANSWER WHEN CALLED ***************************/
 export async function randomAnswer(req, res) {
@@ -70,17 +46,17 @@ export async function predictTag(req, res) {
         const prompt = req.body.prompt;
         getTag(prompt)
             .then(async predictedTag => {
-                const thread = new Thread({
+                const question = new Question({
                     prompt: req.body.prompt,
                     completion: "test",
                     tag: predictedTag,
                     subtag: "",
                     user: userId
                 });
-                await thread.save().then(async t => {
-                    user.threads.push(thread);
+                await question.save().then(async t => {
+                    user.questions.push(question);
                     await user.save();
-                    res.status(201).json({ thread })
+                    res.status(201).json({ question })
                 })
             })
             .catch(error => {
