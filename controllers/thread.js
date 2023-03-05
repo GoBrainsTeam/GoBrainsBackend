@@ -1,9 +1,8 @@
 import Thread from "../models/thread.js";
 import User from "../models/user.js";
-import { PythonShell } from 'python-shell';
 import axios from 'axios';
 
-export async function saveThread(req, res) {
+/*export async function saveThread(req, res) {
     try {
         const userId = req.user["id"]
         const user = await User.findById(userId)
@@ -26,8 +25,9 @@ export async function saveThread(req, res) {
     } catch (e) {
         res.status(500).send({ message: "Internal Server Error!" })
     }
-}
+}*/
 
+/*************************** GENERATED RANDOM ANSWER WHEN CALLED ***************************/
 export async function randomAnswer(req, res) {
     try {
         const answers = [
@@ -46,6 +46,7 @@ export async function randomAnswer(req, res) {
     }
 }
 
+/*************************** GET PROMPT TAG FROM API ***************************/
 async function getTag(prompt) {
     try {
         const response = await axios.post('http://127.0.0.1:5000/predict', {
@@ -61,54 +62,17 @@ async function getTag(prompt) {
     }
 }
 
+/*************************** GET USER QUESTION, GET CORRESPONDING TAG AND SAVE TO DB ***************************/
 export async function predictTag(req, res) {
     try {
         const userId = req.user["id"]
         const user = await User.findById(userId)
         const prompt = req.body.prompt;
         getTag(prompt)
-        .then(async predictedTag => {
-            const thread = new Thread({
-                prompt: req.body.prompt,
-                completion: "test",
-                tag: predictedTag,
-                subtag: "",
-                user: userId
-            });
-            await thread.save().then(async t => {
-                user.threads.push(thread);
-                await user.save();
-                res.status(201).json({ thread })
-            })
-        })
-        .catch(error => {
-            console.error(error);
-            res.status(500).send('Internal Server Error');
-        });
-        
-    } catch (e) {
-        res.status(500).send({ message: "Internal Server Error!" })
-    }
-}
-
-/*  export async function predictTag(req, res) {
-    try {
-        const prompt = req.body.prompt;
-        const options = {
-            mode: 'json',
-            pythonOptions: ['-u'],
-            scriptPath: 'C:/Users/Bugs Bunny/Desktop/4SIM/PIM/GoBrainData/src/',
-            args: [prompt]
-        };
-        PythonShell.run('api.py', options, async (err, result) => {
-            if (err) throw err;
-            const predictedTag = result[0];
-            const userId = req.user["id"]
-            const user = await User.findById(userId)
-            if (user) {
+            .then(async predictedTag => {
                 const thread = new Thread({
                     prompt: req.body.prompt,
-                    completion: "",
+                    completion: "test",
                     tag: predictedTag,
                     subtag: "",
                     user: userId
@@ -116,21 +80,15 @@ export async function predictTag(req, res) {
                 await thread.save().then(async t => {
                     user.threads.push(thread);
                     await user.save();
-                    res.status(201).json({ message: thread })
+                    res.status(201).json({ thread })
                 })
-            }
-            //return res.status(202).send({ tag: predictedTag });
-        });
+            })
+            .catch(error => {
+                console.error(error);
+                res.status(500).send({ message: "Internal Server Error!" });
+            });
+
     } catch (e) {
         res.status(500).send({ message: "Internal Server Error!" })
     }
-}*/
-
-
-/*const question = req.query.q;
-  getTag(question)
-    .then(tag => res.json({ tag: tag }))
-    .catch(error => {
-      console.error(error);
-      res.status(500).send('Internal Server Error');
-    });*/
+}
