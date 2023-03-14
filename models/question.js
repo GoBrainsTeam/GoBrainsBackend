@@ -17,10 +17,14 @@ const QuestionSchema = new Schema(
     subtag: {
       type: String,
     },
+    thread: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Thread"
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
-    }
+    },
   }
 );
 

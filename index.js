@@ -7,6 +7,7 @@ import handlebars from "express-handlebars";
 import { errorHandler, notFoundError } from './middlewares/error-handler.js';
 import userRoutes from './routes/user.js';
 import questionRoutes from './routes/question.js';
+import threadRoutes from './routes/thread.js';
 import statsRoutes from './routes/stats.js';
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/img', express.static('public/images'));
 //ROUTES
 app.use('/user', userRoutes);
 app.use('/question', questionRoutes);
+app.use('/thread', threadRoutes);
 app.use('/stats', statsRoutes);
 
 // 404 routes middlewares

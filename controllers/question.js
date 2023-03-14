@@ -38,6 +38,7 @@ async function getTag(prompt) {
     }
 }
 
+
 /*************************** GET USER QUESTION, GET CORRESPONDING TAG AND SAVE TO DB ***************************/
 export async function predictTag(req, res) {
     try {
@@ -68,3 +69,48 @@ export async function predictTag(req, res) {
         res.status(500).send({ message: "Internal Server Error!" })
     }
 }
+
+/*************************** GET RESPONSE FROM SEQ CHATBOT ***************************/
+async function getResponse(message) {
+    try {
+        const response = await axios.post('http://127.0.0.1:5000/getResponse', {
+            'message': message
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data.response;
+    } catch (error) {
+        console.error(error);
+    }
+}
+export async function getResponseSeq(req, res) {
+    try {
+      const response = await getResponse(req.body.message);
+      res.status(200).json({ response });
+    } catch (error) {
+      res.status(500).send({ message: "Internal Server Error!" });
+    }
+  }
+
+/*************************** BOTPRESS ***************************/
+async function askBot(message) {
+    const botpressUrl = 'http://localhost:3000/api/v1/bots/welcomebot/converse/userId/secured?include=nlu';
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': process.env.BOTPRESS_TOKEN
+      };
+    const data = { text: message };
+    const response = await axios.post(botpressUrl, data, { headers });
+    return response.data.responses[0].text;
+}
+  
+export async function getBotpressResponse(req, res) {
+    try {
+      const response = await askBot(req.body.prompt);
+      res.status(200).json({ response });
+    } catch (error) {
+      res.status(500).send({ message: "Internal Server Error!" });
+    }
+  }

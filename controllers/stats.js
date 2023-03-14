@@ -1,5 +1,6 @@
 import Question from "../models/question.js";
 import User from "../models/user.js";
+import axios from 'axios';
 
 /*************************** USERS COUNT (ALL USERS IN DB EXCEPT ADMINS/NOT RELATED TO QUESTIONS) ***************************/
 export async function countUsers(req, res) {
@@ -243,5 +244,42 @@ export async function getQuestionPercentageBySpeciality(req, res) {
         }
     } catch (e) {
         res.status(500).send({ message: "Internal Server Error!" });
+    }
+}
+
+/********* GET accruacy FROM API *********/
+async function getAccuracyFromApi() {
+    try {
+        const response = await axios.get('http://127.0.01:5000/getAccuracy', {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data.accuracy;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+/********* GET Accuracy *********/
+export async function getAccuracy(req, res) {
+    try {
+        const role = req.user["role"];
+        if (role == "ADMIN") {
+            getAccuracyFromApi()
+                .then(async accuracy => {
+
+                    res.status(201).json({ accuracy })
+
+                })
+                .catch(error => {
+                    console.error(error);
+                    res.status(500).send({ message: "Internal Server Error!" });
+                });
+        } else {
+            res.status(401).send({ message: "Oops, looks like you're not an admin!" })
+        }
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" })
     }
 }

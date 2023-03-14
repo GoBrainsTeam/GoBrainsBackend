@@ -1,5 +1,5 @@
 import express from 'express';
-import { countAsked, countUsers, getRolePercentage, getTagStats, getQuestionPercentageByRoles, getQuestionPercentageBySpeciality, getQuestionPercentageByStudentLevel } from '../controllers/stats.js';
+import { countAsked, countUsers, getRolePercentage, getTagStats, getQuestionPercentageByRoles, getQuestionPercentageBySpeciality, getQuestionPercentageByStudentLevel, getAccuracy } from '../controllers/stats.js';
 import { authenticateUser } from '../middlewares/authorization.js';
 
 const router = express.Router();
@@ -24,5 +24,8 @@ router.route("/question/level")
 
 router.route("/question/speciality")
     .get(authenticateUser, getQuestionPercentageBySpeciality)
+
+router.route("/question/accuracy")
+    .get(authenticateUser, getAccuracy)
 
 export default router;
