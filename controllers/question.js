@@ -1,4 +1,5 @@
 import Question from "../models/question.js";
+import Thread from "../models/thread.js";
 import User from "../models/user.js";
 import axios from 'axios';
 
@@ -38,7 +39,6 @@ async function getTag(prompt) {
     }
 }
 
-
 /*************************** GET USER QUESTION, GET CORRESPONDING TAG AND SAVE TO DB ***************************/
 export async function predictTag(req, res) {
     try {
@@ -70,7 +70,7 @@ export async function predictTag(req, res) {
     }
 }
 
-/*************************** GET RESPONSE FROM SEQ CHATBOT ***************************/
+/*************************** GET COMPLETION AND TAG FROM SEQ CHATBOT AND SAVE QUESTION TO DB ***************************/
 async function getResponse(message) {
     try {
         const response = await axios.post('http://127.0.0.1:5000/getResponse', {
@@ -80,19 +80,69 @@ async function getResponse(message) {
                 'Content-Type': 'application/json'
             }
         });
-        return response.data.response;
+        return response.data;
     } catch (error) {
         console.error(error);
     }
 }
+
+//get completion and tag from seq bot
 export async function getResponseSeq(req, res) {
-    try {
-      const response = await getResponse(req.body.message);
-      res.status(200).json({ response });
-    } catch (error) {
-      res.status(500).send({ message: "Internal Server Error!" });
+    const userId = req.user["id"];
+    var threadId = req.body.threadId;
+    const user = await User.findById(userId);
+    const prompt = req.body.prompt
+    const response = await getResponse(prompt)
+    const predictedTag = response.tag;
+    const completion = response.completion;
+    let thread
+
+    if (threadId != "") {
+        thread = await Thread.findById({ "_id": threadId });
     }
-  }
+
+    if (!thread) {
+        thread = new Thread({
+            title: "Untitled",
+            user: userId,
+        });
+        threadId = thread._id
+    }
+
+    const question = createQuestion(prompt, completion, predictedTag, userId, threadId)
+    await question.save().then(async q => {
+        if (!thread.questions) {
+            thread.questions = [];
+        }
+        thread.questions.push(q);
+        thread.save().then(async t => {
+            if (!user.threads) {
+                user.threads = [];
+            }
+            const threadIds = user.threads.map(thread => thread._id.toString());
+            if (!threadIds.includes(t._id.toString())) {
+                user.threads.push(t);
+                await user.save();
+            }
+
+        })
+        res.status(201).json({ question: q });
+    })
+}
+
+
+//create question
+function createQuestion(prompt, completion, predictedTag, userId, threadId) {
+    const question = new Question({
+        prompt: prompt,
+        completion: completion,
+        tag: predictedTag,
+        subtag: "",
+        user: userId,
+        thread: threadId
+    });
+    return question
+}
 
 /*************************** BOTPRESS ***************************/
 async function askBot(message) {
@@ -100,17 +150,17 @@ async function askBot(message) {
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': process.env.BOTPRESS_TOKEN
-      };
+    };
     const data = { text: message };
     const response = await axios.post(botpressUrl, data, { headers });
     return response.data.responses[0].text;
 }
-  
+
 export async function getBotpressResponse(req, res) {
     try {
-      const response = await askBot(req.body.prompt);
-      res.status(200).json({ response });
+        const response = await askBot(req.body.prompt);
+        res.status(200).json({ response });
     } catch (error) {
-      res.status(500).send({ message: "Internal Server Error!" });
+        res.status(500).send({ message: "Internal Server Error!" });
     }
-  }
+}

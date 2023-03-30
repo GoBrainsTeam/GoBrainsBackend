@@ -11,9 +11,9 @@ router.route("/predictag")
     .post(authenticateUser, predictTag)
 
 router.route("/getseqrep")
-    .post(getResponseSeq)
+    .post(authenticateUser,getResponseSeq)
 
 router.route("/botpress")
-    .post(getBotpressResponse)
+    .post(authenticateUser,getBotpressResponse)
 
 export default router;
