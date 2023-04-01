@@ -18,9 +18,9 @@ export async function getAll(req, res) {
 }
 
 /*************************** GET THREAD BY ID ***************************/
-export async function getOne(req, res) {
+export async function getById(req, res) {
     try {
-        const threadId = req.body.threadId
+        const threadId = req.params.threadId
         const thread = await Thread.findById(threadId).populate("questions")
         if (thread) {
             res.status(200).send({ thread })
