@@ -49,6 +49,9 @@ const UserSchema = new Schema(
         ref: "Thread"
       }
     ],
+  },
+  {
+    timestamps: true
   }
 );
 

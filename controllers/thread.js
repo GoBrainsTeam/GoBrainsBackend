@@ -4,7 +4,7 @@ import Thread from "../models/thread.js";
 export async function getAll(req, res) {
     try {
         const id = req.user["id"]
-        var threads = await Thread.find({ user: id }).sort({ createdAt: -1 }).populate("questions");
+        var threads = await Thread.find({ user: id }).populate("questions").sort({ updatedAt: -1 });
         if (threads.length != 0) {
             res.status(200).send({ threads })
         } else if (threads.length == 0) {

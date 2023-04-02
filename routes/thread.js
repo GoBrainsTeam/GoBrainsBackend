@@ -8,7 +8,7 @@ router.route("/getall")
     .get(authenticateUser, getAll)
 
 router.route("/getone")
-    .get(authenticateUser, getOne)
+    .post(authenticateUser, getOne)
     
 router.route("/delete")
 .get(authenticateUser, deleteThread)
