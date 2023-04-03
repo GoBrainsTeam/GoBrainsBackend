@@ -88,12 +88,14 @@ async function getResponse(message) {
 
 //get completion and tag from seq bot
 export async function getResponseSeq(req, res) {
+    try{
     const userId = req.user["id"];
     var threadId = req.body.threadId;
     const user = await User.findById(userId);
     const prompt = req.body.prompt
     const response = await getResponse(prompt)
-    const predictedTag = response.tag;
+    if(response){
+        const predictedTag = response.tag;
     const completion = response.completion;
     let thread
 
@@ -128,6 +130,12 @@ export async function getResponseSeq(req, res) {
         })
         res.status(201).json({ question: q });
     })
+    }else{
+        res.status(500).json({ message: "Couldn't reach bot!" });
+    }
+    }catch(e){
+        res.status(500).json({ message: "Internal Server Error!" });
+    }
 }
 
 
