@@ -10,7 +10,7 @@ router.route("/getall")
 router.route("/getone/:threadId")
     .get(authenticateUser, getById)
     
-router.route("/delete")
-.get(authenticateUser, deleteThread)
+router.route("/delete/:threadId")
+.delete(authenticateUser, deleteThread)
 
 export default router;
