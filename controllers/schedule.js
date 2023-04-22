@@ -1,24 +1,31 @@
 import Schedule from "../models/schedule.js";
 import User from "../models/user.js";
 
-export async function saveSchedule(req, res) {
-    const schedule = new Schedule({
-        grade: req.body.grade,
-    });
+export function uploadSchedule(req, res) {
 
-    if (req.file) {
-        schedule.schedule = req.file.filename;
-    }else{
-        res.status(400).json({ message: "No Schedule provided!" })
-    }
-    try {
-        await schedule.save();
-        res.status(201).json({ message: "Schedule saved!" });
-    } catch (error) {
-        res.status(500).json({ message: "Internal Server Error!" });
-    }
+  if (req.file) {
+      res.status(200).send({ message: "Schedule uploaded!" })
+  }
+  else {
+      res.status(500).send({ message: "Failed to upload schedule!" })
+  }
+
 }
 
+export async function saveSchedule(req, res) {
+      if (req.file) {
+        const emploi = new Schedule({
+          grade: req.body.grade,
+          schedule:req.file.filename
+        });
+        await emploi.save();
+        res.status(201).json({ message: "Schedule saved!" });
+      }else{
+        res.status(400).json({ message: "No Schedule provided!" });
+      }
+    
+  }
+  
 
 
 export async function getSchedule(req, res) {
@@ -40,4 +47,3 @@ export async function getSchedule(req, res) {
         res.status(500).send({ message: "Internal Server Error!" });
     }
 }
-

@@ -54,7 +54,7 @@ router
     .put(authenticateUser, updateProfile)
 router
     .route('/updateprofilepic')
-    .put(authenticateUser, multer("pic"), updateprofilepicture)
+    .put(authenticateUser, multer("pic", "../public/images"), updateprofilepicture)
 
 //router.route('/changepwd').put(authenticateUser, changePwd)
 
