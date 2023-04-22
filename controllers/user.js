@@ -30,6 +30,7 @@ export async function signup(req, res) {
                 //isAdmin: req.body.isAdmin, //optional in req body (default=false)
                 role: req.body.role ? req.body.role.toUpperCase() : 'ADMIN',
                 level: req.body.level || null,
+                classe: req.body.classe || null,
                 speciality: req.body.speciality || ''
             });
 
@@ -338,8 +339,8 @@ export async function getProfile(req, res) {
         const id = req.user["id"]
         const u = await User.findById(id)
         if (u) {
-            const { fullname, email, pic, isVerified, role, isBlocked, level, speciality } = u;
-            res.status(200).send({ user: { fullname, email, pic, isVerified, role, isBlocked, level, speciality } })
+            const { fullname, email, pic, isVerified, role, isBlocked, level, classe, speciality } = u;
+            res.status(200).send({ user: { fullname, email, pic, isVerified, role, isBlocked, level,classe, speciality } })
         } else if (!u) {
             res.status(404).send({ message: "User not found!" })
         } else {

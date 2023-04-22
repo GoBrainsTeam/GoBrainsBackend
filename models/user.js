@@ -40,6 +40,9 @@ const UserSchema = new Schema(
     level: {
       type: Number,
     },
+    classe: {
+      type: Number,
+    },
     speciality: {
       type: String,
     },

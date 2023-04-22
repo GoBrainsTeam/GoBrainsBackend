@@ -9,6 +9,7 @@ import userRoutes from './routes/user.js';
 import questionRoutes from './routes/question.js';
 import threadRoutes from './routes/thread.js';
 import statsRoutes from './routes/stats.js';
+import scheduleRoutes from './routes/schedule.js';
 
 const app = express();
 dotenv.config();
@@ -48,6 +49,7 @@ app.use('/user', userRoutes);
 app.use('/question', questionRoutes);
 app.use('/thread', threadRoutes);
 app.use('/stats', statsRoutes);
+app.use('/schedule', scheduleRoutes);
 
 // 404 routes middlewares
 app.use(notFoundError);
