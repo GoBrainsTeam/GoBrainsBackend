@@ -13,6 +13,7 @@ export function uploadSchedule(req, res) {
 }
 
 export async function saveSchedule(req, res) {
+    try {
       if (req.file) {
         const emploi = new Schedule({
           grade: req.body.grade,
@@ -23,7 +24,9 @@ export async function saveSchedule(req, res) {
       }else{
         res.status(400).json({ message: "No Schedule provided!" });
       }
-    
+    } catch (e) {
+        res.status(500).send({ message: "Internal Server Error!" });
+    }
   }
   
 
