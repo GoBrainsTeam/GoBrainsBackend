@@ -13,10 +13,13 @@ export default function (pdf, emplacement) {
             },
             //configurer le nom avec lequel le fichier va etre enregistrer
             filename: (req, file, callback) => {
+                //remplacer les espaces par des underscores
+                const name = path.parse(file.originalname.split(" ").join("_")).name
                 //recuperer l'extension à utiliser pour le fichier
                 const extension = extname(file.originalname);
-                callback(null, "schedules" + extension);
+                //ajouter un timestamp Date.now() au nom du fichier
+                callback(null, name + extension);
             },
         }),
-    }).single(pdf); //le fichier est envoyé dans le body avec nom/clé
+    }).single(pdf); //le fichier est envoyé dans le body avec nom/clé 'pic'
 }

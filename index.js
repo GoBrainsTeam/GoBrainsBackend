@@ -42,6 +42,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/img', express.static('public/images'));
+app.use('/schedule', express.static('public/schedules'));
 
 
 //ROUTES
