@@ -1,13 +1,30 @@
 import Schedule from "../models/schedule.js";
 import User from "../models/user.js";
+import axios from 'axios';
 
-export function uploadSchedule(req, res) {
+export async function uploadSchedule(req, res) {
 
   if (req.file) {
+    await sendSchedules()
     res.status(201).json({ message: "Schedule uploaded!" });
   }
   else {
     res.status(500).send({ message: "Failed to upload schedule!" })
+  }
+}
+
+async function sendSchedules() {
+  try {
+    const response = await axios.post('http://127.0.0.1:5000/schedule', {
+      'pdf_url': "http://localhost:9090/schedule/schedules.pdf"
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return true;
+  } catch (error) {
+    console.error(error);
   }
 }
 
