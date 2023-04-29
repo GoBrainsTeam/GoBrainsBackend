@@ -1,6 +1,6 @@
-import Schedule from "../models/schedule.js";
 import User from "../models/user.js";
 import axios from 'axios';
+import { io } from '../index.js';
 
 export async function uploadSchedule(req, res) {
 
@@ -10,6 +10,48 @@ export async function uploadSchedule(req, res) {
   }
   else {
     res.status(500).send({ message: "Failed to upload schedule!" })
+  }
+}
+
+export async function saveSchedule(req, res) {
+  try {
+
+  if (req.file) {
+      await res.status(201).json({ message: "Schedule uploaded!" });
+      const userId = req.user["id"];
+      const user = await User.findById(userId);
+      const userGrade = user.level + user.speciality + user.classe
+      const fn = req.file.filename.toLocaleLowerCase()
+      if (user.role == "STUDENT" && fn.includes(userGrade.toLowerCase())) {
+        console.log("NOTIF TRIGGERED")
+        io.sockets.emit("message", {
+          message: "Next week's schedule is uploaded!",
+        });
+      }
+    } else {
+      res.status(400).send({ message: "Failed to upload schedule!" });
+    }
+  } catch (error) {
+    res.status(500).send({ message: "Internal server error!" });
+  }
+}
+
+
+export async function sendNotif(req, res) {
+  try {
+    const response = req.body.response
+    if (response.toLowerCase() == "done") {
+      const userId = req.user["id"]
+      const user = await User.findById(userId)
+      if (user.role.toLowerCase() == "student") {
+        io.sockets.emit('message', { message: "Next week's schedule is uploaded!" });
+      }
+      res.status(200).json({ message: "Operation succeeded!" });
+    }else{
+      res.status(400).send({ message: "Operation failed!" })
+    }
+  } catch (e) {
+    res.status(500).send({ message: "Internal server error!" })
   }
 }
 

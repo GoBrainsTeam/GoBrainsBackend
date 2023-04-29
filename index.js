@@ -1,4 +1,6 @@
 import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
@@ -57,6 +59,26 @@ app.use(notFoundError);
 app.use(errorHandler);
 
 
+const httpServer = createServer(app);
+const io = new Server(httpServer);
+var connections = [];
+
+io.on("connection", socket => {
+  connections.push(socket)
+  console.log('Connect: %s sockets are connected', connections.length);
+
+  socket.on('disconnect', (data) => {
+    connections.splice(connections.indexOf(socket), 1);
+    console.log('Disconnect: %s sockets are disconnected', connections.length);
+  });
+
+  /*socket.on('NodeJS Server Port', (data) => {
+    io.sockets.emit({ message: "Next week's schedule is uploaded!" });
+  });*/
+})
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
 })
+
+export { io };
