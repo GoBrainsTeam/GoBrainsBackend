@@ -71,9 +71,14 @@ io.on("connection", socket => {
     connections.splice(connections.indexOf(socket), 1);
     console.log('Disconnect: %s sockets are disconnected', connections.length);
   });
+  /*socket.on('NodeJS Server Port',async (data)=>{
+    io.sockets.emit("message", {
+      message: "Next week's schedule is uploaded!",
+    });
+  });*/
 })
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
 })
 
