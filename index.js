@@ -71,10 +71,6 @@ io.on("connection", socket => {
     connections.splice(connections.indexOf(socket), 1);
     console.log('Disconnect: %s sockets are disconnected', connections.length);
   });
-
-  /*socket.on('NodeJS Server Port', (data) => {
-    io.sockets.emit({ message: "Next week's schedule is uploaded!" });
-  });*/
 })
 
 app.listen(port, () => {

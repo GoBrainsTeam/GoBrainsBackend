@@ -17,7 +17,6 @@ export async function saveSchedule(req, res) {
   try {
 
   if (req.file) {
-      await res.status(201).json({ message: "Schedule uploaded!" });
       const userId = req.user["id"];
       const user = await User.findById(userId);
       const userGrade = user.level + user.speciality + user.classe
@@ -28,6 +27,7 @@ export async function saveSchedule(req, res) {
           message: "Next week's schedule is uploaded!",
         });
       }
+      res.status(201).json({ message: "Schedule uploaded!" });
     } else {
       res.status(400).send({ message: "Failed to upload schedule!" });
     }
