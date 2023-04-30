@@ -22,7 +22,6 @@ export async function saveSchedule(req, res) {
       const userGrade = user.level + user.speciality + user.classe
       const fn = req.file.filename.toLocaleLowerCase()
       if (user.role == "STUDENT" && fn.includes(userGrade.toLowerCase())) {
-        console.log("NOTIF TRIGGERED")
         io.sockets.emit("message", {
           message: "Next week's schedule is uploaded!",
         });
