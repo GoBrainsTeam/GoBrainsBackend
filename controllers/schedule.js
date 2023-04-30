@@ -3,7 +3,6 @@ import axios from 'axios';
 import { io } from '../index.js';
 
 export async function uploadSchedule(req, res) {
-
   if (req.file) {
     await sendSchedules()
     res.status(201).json({ message: "Schedule uploaded!" });
@@ -15,13 +14,8 @@ export async function uploadSchedule(req, res) {
 
 export async function saveSchedule(req, res) {
   try {
-
   if (req.file) {
-      const userId = req.user["id"];
-      const user = await User.findById(userId);
-      const userGrade = user.level + user.speciality + user.classe
-      const fn = req.file.filename.toLocaleLowerCase()
-      if (user.role == "STUDENT" && fn.includes(userGrade.toLowerCase())) {
+      if(req.body.sendNotif === 'true'){
         io.sockets.emit("message", {
           message: "Next week's schedule is uploaded!",
         });

@@ -65,17 +65,12 @@ var connections = [];
 
 io.on("connection", socket => {
   connections.push(socket)
-  console.log('Connect: %s sockets are connected', connections.length);
+  console.log('Connect: %s socket(s) are connected', connections.length);
 
   socket.on('disconnect', (data) => {
     connections.splice(connections.indexOf(socket), 1);
-    console.log('Disconnect: %s sockets are disconnected', connections.length);
+    console.log('Disconnect: %s socket(s) are disconnected', connections.length);
   });
-  /*socket.on('NodeJS Server Port',async (data)=>{
-    io.sockets.emit("message", {
-      message: "Next week's schedule is uploaded!",
-    });
-  });*/
 })
 
 httpServer.listen(port, () => {

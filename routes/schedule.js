@@ -11,7 +11,7 @@ router
     .post(authenticateUser, multerSchedules("scheduleFile", "../public/schedules"), uploadSchedule)
 
 router.route("/save")
-    .post(authenticateUser,multerSchedule("schedule","../public/schedules"), saveSchedule)
+    .post(multerSchedule("schedule","../public/schedules"), saveSchedule)
 
 /*router.route("/get")
     .get(authenticateUser, getSchedule)*/
