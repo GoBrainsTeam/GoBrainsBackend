@@ -37,7 +37,7 @@ export async function getById(req, res) {
 /*************************** DELETE THREAD ***************************/
 export async function deleteThread(req, res) {
     try {
-        const threadId = req.body.threadId
+        const threadId = req.params.threadId
         let thread = await Thread.findById(threadId)
         if (thread) {
             await thread.remove()
