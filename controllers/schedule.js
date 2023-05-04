@@ -15,7 +15,7 @@ export async function uploadSchedule(req, res) {
 export async function saveSchedule(req, res) {
   try {
   if (req.file) {
-      if(req.body.sendNotif === 'true'){
+      if(req.body.sendNotif === 'True'){
         io.sockets.emit("message", {
           message: "Next week's schedule is uploaded!",
         });
@@ -50,7 +50,7 @@ export async function sendNotif(req, res) {
 
 async function sendSchedules() {
   try {
-    const response = await axios.post('http://127.0.0.1:5000/schedule', {
+    const response = await axios.post('http://127.0.0.1:3000/schedule', {
       'pdf_url': "http://localhost:9090/schedule/schedules.pdf"
     }, {
       headers: {
