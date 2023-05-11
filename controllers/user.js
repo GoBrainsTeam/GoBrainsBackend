@@ -151,14 +151,18 @@ export async function signin(req, res) {
         if (user) {
             const verifyPwd = await user.verifyPwd(pwd);
             if (verifyPwd) {
-                const token = generateUserToken(user)
-                if (!user.isVerified) {
-                    await doSendConfirmationEmail(email, token, req.protocol)
-                    res.status(403).send({ message: "Please verify your account!" })
-                } else if (user.role == 'ADMIN') {
-                    res.status(401).send({ message: "Unauthorized!" })
+                if (user.isBlocked) {
+                    res.status(403).send({ message: "Unfortunately, your account has been blocked!" })
                 } else {
-                    res.status(200).send({ token, message: "User logged in!" })
+                    const token = generateUserToken(user)
+                    if (!user.isVerified) {
+                        await doSendConfirmationEmail(email, token, req.protocol)
+                        res.status(403).send({ message: "Please verify your account!" })
+                    } else if (user.role == 'ADMIN') {
+                        res.status(401).send({ message: "Unauthorized!" })
+                    } else {
+                        res.status(200).send({ token, message: "User logged in!" })
+                    }
                 }
             } else {
                 res.status(403).send({ message: "Password is incorrect!" })
@@ -340,7 +344,7 @@ export async function getProfile(req, res) {
         const u = await User.findById(id)
         if (u) {
             const { fullname, email, pic, isVerified, role, isBlocked, level, classe, speciality } = u;
-            res.status(200).send({ user: { fullname, email, pic, isVerified, role, isBlocked, level,classe, speciality } })
+            res.status(200).send({ user: { fullname, email, pic, isVerified, role, isBlocked, level, classe, speciality } })
         } else if (!u) {
             res.status(404).send({ message: "User not found!" })
         } else {
