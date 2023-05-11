@@ -88,64 +88,65 @@ async function getResponse(message) {
 
 //get completion and tag from seq bot
 export async function getResponseSeq(req, res) {
-    try{
-    const userId = req.user["id"];
-    var threadId = req.body.threadId;
-    const user = await User.findById(userId);
-    const prompt = req.body.prompt
-    const response = await getResponse(prompt)
-    if(response){
-        const predictedTag = response.tag;
-    const completion = response.completion;
-    let thread
+    try {
+        const userId = req.user["id"];
+        var threadId = req.body.threadId;
+        const user = await User.findById(userId);
+        const prompt = req.body.prompt
+        const response = await getResponse(prompt)
+        if (response) {
+            const predictedTag = response.tag;
+            const predictedSubTag = response.subtag;
+            const completion = response.completion;
+            let thread
 
-    if (threadId != "") {
-        thread = await Thread.findById({ "_id": threadId });
-    }
+            if (threadId==null || threadId != "") {
+                thread = await Thread.findById({ "_id": threadId });
+            }
 
-    if (!thread) {
-        thread = new Thread({
-            title: "Untitled",
-            user: userId,
-        });
-        threadId = thread._id
-    }
+            if (!thread) {
+                thread = new Thread({
+                    title: predictedTag+": "+predictedSubTag,
+                    user: userId,
+                });
+                threadId = thread._id
+            }
 
-    const question = createQuestion(prompt, completion, predictedTag, userId, threadId)
-    await question.save().then(async q => {
-        if (!thread.questions) {
-            thread.questions = [];
+            const question = createQuestion(prompt, completion, predictedTag,predictedSubTag, userId, threadId)
+            await question.save().then(async q => {
+                if (!thread.questions) {
+                    thread.questions = [];
+                }
+                thread.questions.push(q);
+                thread.save().then(async t => {
+                    if (!user.threads) {
+                        user.threads = [];
+                    }
+                    const threadIds = user.threads.map(thread => thread._id.toString());
+                    if (!threadIds.includes(t._id.toString())) {
+                        user.threads.push(t);
+                        await user.save();
+                    }
+
+                })
+                res.status(201).json({ question: q });
+            })
+        } else {
+            res.status(500).json({ message: "Couldn't reach bot!" });
         }
-        thread.questions.push(q);
-        thread.save().then(async t => {
-            if (!user.threads) {
-                user.threads = [];
-            }
-            const threadIds = user.threads.map(thread => thread._id.toString());
-            if (!threadIds.includes(t._id.toString())) {
-                user.threads.push(t);
-                await user.save();
-            }
-
-        })
-        res.status(201).json({ question: q });
-    })
-    }else{
-        res.status(500).json({ message: "Couldn't reach bot!" });
-    }
-    }catch(e){
+    } catch (e) {
         res.status(500).json({ message: "Internal Server Error!" });
     }
 }
 
 
 //create question
-function createQuestion(prompt, completion, predictedTag, userId, threadId) {
+function createQuestion(prompt, completion, predictedTag,predictedSubTag, userId, threadId) {
     const question = new Question({
         prompt: prompt,
         completion: completion,
         tag: predictedTag,
-        subtag: "",
+        subtag: predictedSubTag,
         user: userId,
         thread: threadId
     });
