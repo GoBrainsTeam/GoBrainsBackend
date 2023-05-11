@@ -185,15 +185,19 @@ export async function signinAdmin(req, res) {
         if (user) {
             const verifyPwd = await user.verifyPwd(pwd);
             if (verifyPwd) {
-                const token = generateUserToken(user)
-                if (!user.isVerified) {
-                    await doSendConfirmationEmail(email, token, req.protocol)
-                    res.status(403).send({ user, message: "Please verify your account!" })
-                } else if (user.role != 'ADMIN') {
-                    res.status(401).send({ message: "Unauthorized!" })
-                }
-                else {
-                    res.status(200).send({ token, message: "Admin logged in!" })
+                if (user.isBlocked) {
+                    res.status(403).send({ message: "Unfortunately, your account has been blocked!" })
+                } else {
+                    const token = generateUserToken(user)
+                    if (!user.isVerified) {
+                        await doSendConfirmationEmail(email, token, req.protocol)
+                        res.status(403).send({ user, message: "Please verify your account!" })
+                    } else if (user.role != 'ADMIN') {
+                        res.status(401).send({ message: "Unauthorized!" })
+                    }
+                    else {
+                        res.status(200).send({ token, message: "Admin logged in!" })
+                    }
                 }
             } else {
                 res.status(403).send({ message: "Password is incorrect!" })
