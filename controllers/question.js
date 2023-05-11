@@ -95,18 +95,21 @@ export async function getResponseSeq(req, res) {
         const prompt = req.body.prompt
         const response = await getResponse(prompt)
         if (response) {
+            var title="Untitled"
             const predictedTag = response.tag;
             const predictedSubTag = response.subtag;
             const completion = response.completion;
             let thread
-
+            if(predictedTag!=null && predictedTag!=""){
+                title=predictedTag+": "+predictedSubTag
+            }
             if (threadId==null || threadId != "") {
                 thread = await Thread.findById({ "_id": threadId });
             }
 
             if (!thread) {
                 thread = new Thread({
-                    title: predictedTag+": "+predictedSubTag,
+                    title: title,
                     user: userId,
                 });
                 threadId = thread._id
